@@ -1,0 +1,23 @@
+{
+    "legacy_addon_id": "",
+    "title": "Hide Development Commands",
+    "description": "Hides XenForo's development, make and designer commands from cmd.php when development or designer mode is off",
+    "version_id": 1000011,
+    "version_string": "1.0.0a1",
+    "dev": "Simon Hampel",
+    "dev_url": "https://xenforo.com/community/members/sim.4264/",
+    "faq_url": "",
+    "support_url": "",
+    "extra_urls": [],
+    "require": {
+        "XF": [
+            "2020070",
+            "XenForo 2.2.0+"
+        ],
+        "php": [
+            "7.4",
+            "PHP 7.4+"
+        ]
+    },
+    "icon": "fa-terminal"
+}
