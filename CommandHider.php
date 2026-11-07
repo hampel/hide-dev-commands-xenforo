@@ -68,6 +68,31 @@ class CommandHider
 		self::$applied = false;
 	}
 
+	/**
+	 * Where core keeps a family's classes. Not every supported XenForo has every family - 2.2 and
+	 * 2.3.0 have no Make commands - so an empty family is only suspicious where this exists.
+	 */
+	public static function familyDirectory(string $prefix): string
+	{
+		return \XF::getSourceDirectory() . '/' . str_replace('\\', '/', rtrim($prefix, '\\'));
+	}
+
+	/**
+	 * Whether a command will run this add-on's refusal rather than its own execute(). Symfony keeps
+	 * what setCode() was given in a private property, in 2.3's console and 2.2's fork alike.
+	 */
+	public static function isBlocked(Command $command): bool
+	{
+		$code = new \ReflectionProperty(Command::class, 'code');
+		if (PHP_VERSION_ID < 80100)
+		{
+			// needed below 8.1, a no-op from 8.1, deprecated from 8.5
+			$code->setAccessible(true);
+		}
+
+		return $code->getValue($command) !== null;
+	}
+
 	public static function modeEnabled(string $mode): bool
 	{
 		$config = \XF::config($mode);
@@ -117,9 +142,16 @@ class CommandHider
 	/**
 	 * Hide and block every command whose mode is off.
 	 *
+	 * $requested is what was typed as the command name, which XF\Cli\Runner has already resolved
+	 * once, before the app started and so before anything was hidden; Symfony resolves it again
+	 * when the command runs. A hidden command reached by an abbreviation would fail that second
+	 * lookup with "does not exist", which the runner logs as a server error. So the command it
+	 * resolves to is blocked but left visible: it refuses as it would without this add-on, and
+	 * `list` is not the command running, so no listing shows it.
+	 *
 	 * @return int how many commands were hidden
 	 */
-	public static function apply(?Application $console = null): int
+	public static function apply(?Application $console = null, ?string $requested = null): int
 	{
 		$console = $console ?? self::$console;
 		if ($console === null)
@@ -128,6 +160,7 @@ class CommandHider
 		}
 
 		self::$applied = true;
+		$running = self::resolve($console, $requested);
 		$hidden = 0;
 
 		foreach (self::families($console) AS $prefix => $commands)
@@ -140,13 +173,33 @@ class CommandHider
 
 			foreach ($commands AS $command)
 			{
-				$command->setHidden(true);
 				$command->setCode(self::refusal($mode));
-				$hidden++;
+				if ($command !== $running)
+				{
+					$command->setHidden(true);
+					$hidden++;
+				}
 			}
 		}
 
 		return $hidden;
+	}
+
+	private static function resolve(Application $console, ?string $name): ?Command
+	{
+		if ($name === null || $name === '')
+		{
+			return null;
+		}
+
+		try
+		{
+			return $console->find($name);
+		}
+		catch (\Throwable $e)
+		{
+			return null;
+		}
 	}
 
 	/**

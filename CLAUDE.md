@@ -49,16 +49,43 @@ All are Simon's except the designer-mode one, which the first session made and r
   would have working commands hidden.
 - **Both `:config` and `:validate`.** The capture needs a real command class; `config` reports state
   that no screen in the admin panel shows.
-- **XenForo 2.2.0+, PHP 7.4+.** The same chain is in 2.2.19, whose Symfony fork has `add()` calling
-  `setApplication()`, `setHidden()` and `setCode()`. PHP 7.4 is for the `RendersReport` trait.
+- **XenForo 2.2.0+, PHP 7.4+.** The same run order, event and Symfony methods are in 2.2.0 Patch 2,
+  2.2.19 Patch 2 and 2.3.0 Patch 2, read from their zips, and 2.2.19 Patch 2 on PHP 7.4 passed the
+  sandbox run in `TESTING.md` on 2026-11-08. PHP 7.4 is for the `RendersReport` trait.
 
-### What hiding does and does not do, in Symfony Console 5.4
+### The command being run is blocked but not hidden, or an abbreviation is logged as an error
+
+**`XF\Cli\Runner` resolves the typed name twice**: once before the app starts, when nothing is hidden,
+and again inside `$console->run()`, after the listener. A hidden command reached by an abbreviation
+passes the first lookup and fails the second with `CommandNotFoundException`, which the runner's
+catch-all logs to `xf_error_log` and renders, exit 1. So the listener passes argv's first argument to
+`apply()`, which leaves the command it resolves to visible. It is still blocked, and `list` is not
+running, so nothing lists it.
+
+A 2.3.13 sandbox found this on 2026-11-08: before the change `xf-dev:inf` logged a server error where
+a forum without the add-on prints "Development mode is not enabled".
+
+### What hiding does and does not do, in Symfony Console 5.4 and 2.2's fork
 
 - **An exact name is returned before the hidden flag is checked**, which is why the block exists.
-- **An abbreviation resolving to a hidden command throws "not defined".**
-- **`list` skips hidden commands, and `list xf-dev` throws** because a namespace holding only hidden
-  commands is not a namespace.
+- **`list` skips hidden commands, and `list xf-dev` throws**, because a namespace holding only hidden
+  commands is not a namespace. The runner logs that throw, and it logs `list <unknown namespace>` the
+  same way on a forum without this add-on, so it is not a regression.
+- **A mistyped name prints "Did you mean" with the hidden commands in it.** The suggestions come from
+  the runner's first lookup, before any listener loads, so this cannot be fixed from an add-on.
 - `help <name>` still describes a hidden command.
+
+### Not every family exists on every supported XenForo
+
+**2.2 and 2.3.0 Patch 2 have no `xf-make:*` and no `XF\Cli\Command\Make\`; 2.2 has no `xf-dev:info`.**
+So an empty family is a warning only where its core directory exists, and a blank skip where it does
+not; otherwise every 2.2 forum would exit 2 under `--strict`. 2.2.19 Patch 2 has 70 development and
+14 designer commands, against 80, 35 and 14 on 2.3.13.
+
+**`validate` proves the block two ways, because 2.2 offers nothing safe to run.** The `blocked` row
+reads Symfony's private `Command::$code` on every hidden command. The `xf-dev:info` row runs that
+command, where it exists, because it only reads and prints. On 2.2 the one unguarded development
+command is `xf-dev:metadata-fix`, which rewrites a file if the block has failed, so it is never run.
 
 ### The add-on declares no secrets, and does not answer `hampel_admin_api_redaction`
 

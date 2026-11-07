@@ -123,6 +123,24 @@ class HidingTest extends TestCase
 		$console->find('xf-dev:inf');
 	}
 
+	/**
+	 * XF\Cli\Runner resolves the typed name before anything is hidden, and Symfony resolves it
+	 * again when the command runs. Hidden by then, the abbreviation fails the second lookup, and
+	 * the runner logs that as a server error.
+	 */
+	public function test_the_command_an_abbreviation_is_running_refuses_rather_than_vanishing()
+	{
+		$this->setModes(false, true);
+		$console = $this->forumConsole();
+		CommandHider::apply(null, 'xf-dev:inf');
+
+		[$code, $output] = $this->runIn($console, 'xf-dev:inf');
+
+		$this->assertSame(1, $code);
+		$this->assertSame('Development mode is not enabled', trim($output));
+		$this->assertTrue($console->find('xf-dev:import')->isHidden(), 'only the command being run is left visible');
+	}
+
 	public function test_an_unguarded_command_refuses_by_its_exact_name()
 	{
 		$this->setModes(false, true);

@@ -77,10 +77,15 @@ class Validate extends Command
 		$this->checkSection('Blocking');
 		if ($console === null)
 		{
+			$this->checkSkip('blocked', 'no console application to inspect');
 			$this->checkSkip('xf-dev:info', 'no console application to inspect');
 		}
 		else
 		{
+			$this->probe('blocked', function () use ($families)
+			{
+				$this->blocked($families ?? []);
+			});
 			$this->probe('xf-dev:info', function () use ($console)
 			{
 				$this->refusesByName($console);
@@ -132,7 +137,14 @@ class Validate extends Command
 
 		if ($total === 0)
 		{
-			$this->checkWarn($label, "nothing registered under {$prefix} - has XenForo moved these commands?");
+			if (is_dir(CommandHider::familyDirectory($prefix)))
+			{
+				$this->checkWarn($label, "nothing registered under {$prefix} - has XenForo moved these commands?");
+			}
+			else
+			{
+				$this->checkSkip($label, 'not in XenForo ' . \XF::$version);
+			}
 
 			return;
 		}
@@ -157,6 +169,53 @@ class Validate extends Command
 		}
 
 		$this->checkFail($label, "{$hidden} of {$total} hidden, although {$mode} mode is off");
+	}
+
+	/**
+	 * Every command hidden because its mode is off also runs the refusal in place of its own
+	 * execute(). This is read from the command, not proved by running it: on XenForo 2.2 the only
+	 * development command with no guard of its own is xf-dev:metadata-fix, which rewrites a file
+	 * if the block has failed.
+	 *
+	 * @param array<string, array<string, Command>> $families
+	 */
+	private function blocked(array $families): void
+	{
+		$total = 0;
+		$open = [];
+
+		foreach ($families AS $prefix => $commands)
+		{
+			if (CommandHider::modeEnabled(CommandHider::FAMILIES[$prefix]['mode']))
+			{
+				continue;
+			}
+
+			foreach ($commands AS $name => $command)
+			{
+				$total++;
+				if (!CommandHider::isBlocked($command))
+				{
+					$open[] = $name;
+				}
+			}
+		}
+
+		if ($total === 0)
+		{
+			$this->checkSkip('blocked', 'every mode is on, so nothing is blocked');
+
+			return;
+		}
+
+		if (!$open)
+		{
+			$this->checkOk('blocked', "{$total} refuse in place of their own code");
+
+			return;
+		}
+
+		$this->checkFail('blocked', count($open) . " of {$total} would run their own code, such as {$open[0]}");
 	}
 
 	/**

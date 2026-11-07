@@ -63,7 +63,10 @@ class Config extends Command
 				return $command->isHidden();
 			});
 
-			$this->detail($family['label'], $this->summary(count($commands), count($hidden), $family['mode']));
+			$summary = !$commands && !is_dir(CommandHider::familyDirectory($prefix))
+				? $this->muted('not in XenForo ' . \XF::$version)
+				: $this->summary(count($commands), count($hidden), $family['mode']);
+			$this->detail($family['label'], $summary);
 			$listed = array_merge($listed, array_keys($hidden));
 		}
 

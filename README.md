@@ -28,8 +28,12 @@ run without their mode. The two that do not are `xf-dev:info`, which prints the 
 and paths, and `xf-dev:metadata-fix`, which rewrites a metadata file. With this add-on they refuse
 too, with the same message as the others.
 
-A hidden command is not listed by `list`, cannot be reached by an abbreviation, and leaves its
-namespace out of `list <namespace>`. `help <command>` still describes it.
+A hidden command is not listed by `list`, and `list xf-dev` reports no such namespace. Typed by its
+name or an abbreviation, it refuses. `help <command>` still describes it.
+
+**A mistyped name still lists them.** `php cmd.php xf-dev:nope` prints XenForo's "Did you mean one
+of these?" with the hidden commands in it, because XenForo looks the name up before any add-on has
+loaded. Nothing an add-on can do reaches that point.
 
 ## Usage
 

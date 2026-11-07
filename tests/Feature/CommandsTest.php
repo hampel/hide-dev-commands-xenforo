@@ -90,6 +90,7 @@ class CommandsTest extends TestCase
 
 		$this->assertSame(0, $code, $output);
 		$this->assertStringContainsString('[    ] xf-dev:info', $output);
+		$this->assertStringContainsString('[    ] blocked', $output);
 	}
 
 	public function test_validate_proves_the_block_with_both_modes_off()
@@ -103,6 +104,7 @@ class CommandsTest extends TestCase
 		$this->assertSame(0, $code, $output);
 		$this->assertMatchesRegularExpression('/\[ ok \] xf-dev:\*\s+\d+ hidden/', $output);
 		$this->assertMatchesRegularExpression('/\[ ok \] xf-dev:info\s+refuses when named exactly/', $output);
+		$this->assertMatchesRegularExpression('/\[ ok \] blocked\s+\d+ refuse in place of their own code/', $output);
 	}
 
 	public function test_unattended_is_accepted_and_changes_nothing()
@@ -130,6 +132,7 @@ class CommandsTest extends TestCase
 		$this->assertStringContainsString('[fail] listener ran', $output);
 		$this->assertMatchesRegularExpression('/\[fail\] xf-dev:\*\s+0 of \d+ hidden/', $output);
 		$this->assertMatchesRegularExpression('/\[fail\] xf-dev:info\s+ran when named exactly/', $output);
+		$this->assertMatchesRegularExpression('/\[fail\] blocked\s+\d+ of \d+ would run their own code/', $output);
 	}
 
 	/**
