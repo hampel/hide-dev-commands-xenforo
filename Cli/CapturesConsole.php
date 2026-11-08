@@ -13,6 +13,9 @@ use Symfony\Component\Console\Application;
  */
 trait CapturesConsole
 {
+	/**
+	 * @return void
+	 */
 	public function setApplication(?Application $application = null)
 	{
 		CommandHider::capture($application);

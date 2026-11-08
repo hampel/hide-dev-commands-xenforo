@@ -10,7 +10,7 @@ class Listener
 	 * application is not passed to the event; this add-on's own commands captured it during
 	 * registration. The command name is read from argv the way XF\Cli\Runner reads it.
 	 */
-	public static function appCliStartEnd(\XF\Cli\App $app)
+	public static function appCliStartEnd(\XF\Cli\App $app): void
 	{
 		CommandHider::apply(null, (new ArgvInput())->getFirstArgument());
 	}
@@ -22,9 +22,9 @@ class Listener
 	 *
 	 * The event exists only where that add-on is installed; elsewhere this is never called.
 	 *
-	 * @param array $declarations
+	 * @param array<string, array<string, mixed>> $declarations
 	 */
-	public static function adminApiRedaction(array &$declarations)
+	public static function adminApiRedaction(array &$declarations): void
 	{
 		$declarations['Hampel/HideDevCommands'] = [];
 	}

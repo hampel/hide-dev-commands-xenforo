@@ -11,7 +11,7 @@ use Tests\TestCase;
  */
 class SecretsDeclarationTest extends TestCase
 {
-	public function test_it_declares_this_add_on_only_and_declares_nothing()
+	public function test_it_declares_this_add_on_only_and_declares_nothing(): void
 	{
 		$declarations = [];
 		Listener::adminApiRedaction($declarations);
@@ -19,7 +19,7 @@ class SecretsDeclarationTest extends TestCase
 		$this->assertSame(['Hampel/HideDevCommands' => []], $declarations);
 	}
 
-	public function test_the_add_on_still_has_no_options_to_declare()
+	public function test_the_add_on_still_has_no_options_to_declare(): void
 	{
 		$options = array_values(array_filter(
 			glob(dirname(__DIR__, 2) . '/_output/options/*.json') ?: [],
@@ -32,7 +32,7 @@ class SecretsDeclarationTest extends TestCase
 		$this->assertSame([], $options, 'an option was added: decide whether it is a secret, and declare it');
 	}
 
-	public function test_the_listener_is_registered_for_the_event()
+	public function test_the_listener_is_registered_for_the_event(): void
 	{
 		$registered = [];
 		foreach (glob(dirname(__DIR__, 2) . '/_output/code_event_listeners/*.json') ?: [] AS $file)

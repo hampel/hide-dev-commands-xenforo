@@ -3,6 +3,7 @@
 use Hampel\HideDevCommands\Cli\CapturesConsole;
 use Hampel\HideDevCommands\Cli\RendersReport;
 use Hampel\HideDevCommands\CommandHider;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,6 +28,9 @@ class Validate extends Command
 	use CapturesConsole;
 	use RendersReport;
 
+	/**
+	 * @return void
+	 */
 	protected function configure()
 	{
 		$this
@@ -97,7 +101,7 @@ class Validate extends Command
 		return $this->checkExitCode((bool) $input->getOption('strict'));
 	}
 
-	private function captured()
+	private function captured(): ?Application
 	{
 		$console = CommandHider::console();
 		if ($console === null)
@@ -223,7 +227,7 @@ class Validate extends Command
 	 * that shows whether the block works. It only reads and prints, so running it is harmless even
 	 * if the block has failed, and its output goes to a buffer that is thrown away.
 	 */
-	private function refusesByName($console): void
+	private function refusesByName(Application $console): void
 	{
 		if (CommandHider::modeEnabled('development'))
 		{

@@ -18,7 +18,7 @@ class CommandsTest extends TestCase
 	 * XenForo loads every add-on's command classes to list them, so one that cannot load takes down
 	 * every command in cmd.php, not only its own.
 	 */
-	public function test_every_command_class_is_one_xenforo_can_load()
+	public function test_every_command_class_is_one_xenforo_can_load(): void
 	{
 		$commands = $this->assertConsoleCommandsLoad();
 		sort($commands);
@@ -26,7 +26,7 @@ class CommandsTest extends TestCase
 		$this->assertSame([Config::class, Validate::class], $commands);
 	}
 
-	public function test_no_command_extends_a_base_class_missing_from_xenforo_2_2_or_redefines_run()
+	public function test_no_command_extends_a_base_class_missing_from_xenforo_2_2_or_redefines_run(): void
 	{
 		$problems = [];
 		foreach ([Config::class, Validate::class] AS $class)
@@ -44,7 +44,7 @@ class CommandsTest extends TestCase
 		$this->assertSame([], $problems);
 	}
 
-	public function test_config_reports_each_family()
+	public function test_config_reports_each_family(): void
 	{
 		$this->setModes(false, true);
 		$console = $this->forumConsole();
@@ -59,7 +59,7 @@ class CommandsTest extends TestCase
 		$this->assertMatchesRegularExpression('/^  xf-dev:info$/m', $output);
 	}
 
-	public function test_config_says_so_when_the_mode_is_off_and_nothing_was_hidden()
+	public function test_config_says_so_when_the_mode_is_off_and_nothing_was_hidden(): void
 	{
 		$this->setModes(false, true);
 		$console = $this->forumConsole();
@@ -69,7 +69,7 @@ class CommandsTest extends TestCase
 		$this->assertMatchesRegularExpression('/xf-dev:\* \.+ \d+, shown although development mode is off/', $output);
 	}
 
-	public function test_config_changes_nothing()
+	public function test_config_changes_nothing(): void
 	{
 		$this->setModes(false, false);
 		$console = $this->forumConsole();
@@ -80,7 +80,7 @@ class CommandsTest extends TestCase
 		$this->assertFalse($console->find('xf-dev:info')->isHidden());
 	}
 
-	public function test_validate_passes_with_both_modes_on()
+	public function test_validate_passes_with_both_modes_on(): void
 	{
 		$this->setModes(true, true);
 		$console = $this->forumConsole();
@@ -93,7 +93,7 @@ class CommandsTest extends TestCase
 		$this->assertStringContainsString('[    ] blocked', $output);
 	}
 
-	public function test_validate_proves_the_block_with_both_modes_off()
+	public function test_validate_proves_the_block_with_both_modes_off(): void
 	{
 		$this->setModes(false, false);
 		$console = $this->forumConsole();
@@ -107,7 +107,7 @@ class CommandsTest extends TestCase
 		$this->assertMatchesRegularExpression('/\[ ok \] blocked\s+\d+ refuse in place of their own code/', $output);
 	}
 
-	public function test_unattended_is_accepted_and_changes_nothing()
+	public function test_unattended_is_accepted_and_changes_nothing(): void
 	{
 		$this->setModes(false, false);
 		$console = $this->forumConsole();
@@ -120,7 +120,7 @@ class CommandsTest extends TestCase
 		$this->assertSame($attended, $unattended);
 	}
 
-	public function test_validate_fails_when_the_listener_never_ran()
+	public function test_validate_fails_when_the_listener_never_ran(): void
 	{
 		$this->setModes(false, true);
 		$console = $this->forumConsole();
@@ -139,7 +139,7 @@ class CommandsTest extends TestCase
 	 * A console holding only this add-on's commands is what a XenForo that had moved its own would
 	 * look like: nothing broken, and nothing hidden either.
 	 */
-	public function test_validate_warns_when_no_family_is_found()
+	public function test_validate_warns_when_no_family_is_found(): void
 	{
 		$this->setModes(true, true);
 		$console = $this->consoleWith(new Config(), new Validate());
@@ -152,7 +152,7 @@ class CommandsTest extends TestCase
 		$this->assertMatchesRegularExpression('/\[warn\] xf-dev:\*\s+nothing registered/', $output);
 	}
 
-	public function test_a_check_that_throws_does_not_end_the_run()
+	public function test_a_check_that_throws_does_not_end_the_run(): void
 	{
 		$this->fakesErrors();
 		$this->setModes(true, true);

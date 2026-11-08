@@ -17,6 +17,9 @@ class Config extends Command
 	use CapturesConsole;
 	use RendersReport;
 
+	/**
+	 * @return void
+	 */
 	protected function configure()
 	{
 		$this

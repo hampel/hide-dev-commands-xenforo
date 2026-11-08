@@ -47,7 +47,7 @@ abstract class TestCase extends BaseTestCase
 
 		$runner = new class extends Runner
 		{
-			public function register(Application $console)
+			public function register(Application $console): void
 			{
 				$this->registerCommands($console);
 			}
@@ -66,6 +66,8 @@ abstract class TestCase extends BaseTestCase
 	/**
 	 * Run a command by name inside the given console, so it sees every other command - which
 	 * runConsoleCommand() cannot do, as it adds the one command to an application of its own.
+	 *
+	 * @param array<string, mixed> $input
 	 *
 	 * @return array{0: int, 1: string} the exit code and the output
 	 */
