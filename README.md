@@ -44,18 +44,32 @@ loaded. Nothing an add-on can do reaches that point.
 ## Hiding other commands
 
 **List any command you do not want in `cmd.php list` in `config.php`**, by name or with a `*`
-pattern. This applies whatever the modes are:
+pattern. This applies whatever the modes are.
+
+**A good start on a production forum is the add-on developer's tools**, which build, version and
+export an add-on's source. None is guarded by development mode, so they are listed on every forum,
+and none has a use on one that only installs add-ons:
 
 ```php
 $config['hideDevCommands']['hide'] = [
-    'xf-rebuild:*',
-    'xf:rebuild-master-data',
+    'xf-addon:build-release',
+    'xf-addon:bump-version',
+    'xf-addon:create',
+    'xf-addon:export',
+    'xf-addon:sync-json',
+    'xf-addon:validate-json',
 ];
 ```
 
+**Leave `xf-addon:install-step`, `upgrade-step` and `uninstall-step` listed.** They re-run one
+step of an add-on's setup, which is how a failed install or upgrade is recovered, so they are
+for production. The `xf:addon-*` commands are too.
+
 **These are hidden, not blocked.** Each still runs when typed by its exact name, so a cron job or a
-script that calls one carries on working. `hide-dev-commands:validate` warns about an entry that
-matches no command.
+script that calls one carries on working. A pattern matches a command's name, not its aliases:
+`xf-addon:*` hides all nine `xf-addon:` commands, including the three step commands, and
+leaves `xf:addon-install` listed although it also answers to `xf-addon:install`.
+`hide-dev-commands:validate` warns about an entry that matches no command.
 
 ## Usage
 

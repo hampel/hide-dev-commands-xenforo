@@ -67,6 +67,41 @@ class ConfiguredHideTest extends TestCase
 		$this->assertMatchesRegularExpression('/hide-dev-commands:config \.+ 1 matched, 1 hidden/', $output);
 	}
 
+	/**
+	 * xf:addon-install also answers to xf-addon:install, and a wildcard over the developer tools
+	 * must not take the install and upgrade commands with it.
+	 */
+	public function test_a_pattern_matches_a_name_not_an_alias(): void
+	{
+		$this->hide(['xf-addon:*']);
+		$console = $this->forumConsole();
+		CommandHider::apply();
+
+		$this->assertTrue($console->find('xf-addon:build-release')->isHidden());
+		$this->assertFalse($console->find('xf:addon-install')->isHidden());
+		$this->assertFalse($console->find('xf:addon-upgrade')->isHidden());
+	}
+
+	/**
+	 * The README's suggested list: every entry is a command on this XenForo.
+	 */
+	public function test_the_readme_example_matches_a_command_with_every_entry(): void
+	{
+		$readme = (string) file_get_contents(dirname(__DIR__, 2) . '/README.md');
+		preg_match('/hideDevCommands\'\]\[\'hide\'\] = \[(.*?)\];/s', $readme, $block);
+		preg_match_all("/'([^']+)'/", $block[1] ?? '', $names);
+		$this->hide($names[1]);
+		$console = $this->forumConsole();
+
+		$unmatched = array_keys(array_filter(CommandHider::configured($console), function (array $commands)
+		{
+			return !$commands;
+		}));
+
+		$this->assertCount(6, $names[1]);
+		$this->assertSame([], $unmatched);
+	}
+
 	public function test_a_single_string_is_taken_as_a_list_of_one(): void
 	{
 		$this->setConfig(CommandHider::CONFIG_KEY, ['hide' => 'xf:addon-list']);
