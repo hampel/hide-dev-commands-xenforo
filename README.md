@@ -61,6 +61,10 @@ you.
 means a check failed. `--unattended` is accepted for a monitor's command line and changes nothing,
 because the command sends and writes nothing.
 
+## Links
+
+- [Source on GitHub](https://github.com/hampel/hide-dev-commands-xenforo)
+
 ## Licence
 
 MIT. See `LICENSE.md`.
