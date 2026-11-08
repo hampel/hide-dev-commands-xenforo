@@ -26,8 +26,8 @@ XenForo 2.2.0 or later, and PHP 7.4 or later.
 traits make a command refuse to run without its mode, so a command that uses one is a development
 command whichever add-on it comes from.
 
-Turn the mode on and the commands come back; nothing is stored. Every other command is left alone,
-including `xf-addon:*`.
+Turn the mode on and the commands come back; nothing is stored. Nothing else is hidden unless you
+list it in `config.php`, below.
 
 **This tidies the list; it does not close a hole.** All but two of these commands already refuse to
 run without their mode. The two that do not are `xf-dev:info`, which prints the database name, user
