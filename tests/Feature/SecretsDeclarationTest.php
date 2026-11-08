@@ -37,7 +37,8 @@ class SecretsDeclarationTest extends TestCase
 		$registered = [];
 		foreach (glob(dirname(__DIR__, 2) . '/_output/code_event_listeners/*.json') ?: [] AS $file)
 		{
-			$listener = json_decode(file_get_contents($file), true);
+			$contents = file_get_contents($file);
+			$listener = $contents === false ? null : json_decode($contents, true);
 			if (isset($listener['event_id']))
 			{
 				$registered[] = $listener['event_id'] . ' ' . $listener['callback_method'];
