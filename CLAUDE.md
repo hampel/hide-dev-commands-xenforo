@@ -33,8 +33,6 @@ namespace, and that `xf-dev:info` refuses by name. Run it on every new XenForo v
 
 ### Decisions, made on 2026-11-08
 
-All are Simon's except the designer-mode one, which the first session made and reported to him.
-
 - **Hide and block every command in a family, not only the two without a guard.** `setCode()`
   replaces `execute()` with a refusal. A guarded command refuses in its own `run()` first, so in
   practice the block answers for `xf-dev:info` and `xf-dev:metadata-fix`. The refusal uses the guard
@@ -139,8 +137,7 @@ console. `runConsoleCommand()` from the framework is not used for this add-on's 
 the one command to an application of its own, which `CapturesConsole` would then capture.
 
 **Call `fakesErrors()` in any test that makes a check throw.** `probe()` logs what it catches, and
-without the fake that is a real row in the development forum's `xf_error_log`. It happened once, on
-2026-11-08, and the row was deleted by id.
+without the fake that is a real row in the development forum's `xf_error_log`.
 
 ## Build and release
 
