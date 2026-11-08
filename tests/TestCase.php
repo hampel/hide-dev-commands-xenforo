@@ -41,7 +41,7 @@ abstract class TestCase extends BaseTestCase
 	 */
 	protected function forumConsole(): Application
 	{
-		$console = new Application('XenForo', \XF::$version);
+		$console = new Application('XenForo', CommandHider::xenForoVersion());
 		$console->setAutoExit(false);
 		$console->setCatchExceptions(false);
 

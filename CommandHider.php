@@ -74,7 +74,17 @@ class CommandHider
 	 */
 	public static function familyDirectory(string $prefix): string
 	{
-		return \XF::getSourceDirectory() . '/' . str_replace('\\', '/', rtrim($prefix, '\\'));
+		$source = \XF::getSourceDirectory();
+
+		return (is_string($source) ? $source : '') . '/' . str_replace('\\', '/', rtrim($prefix, '\\'));
+	}
+
+	/**
+	 * XenForo's version string, which \XF declares without a type.
+	 */
+	public static function xenForoVersion(): string
+	{
+		return is_string(\XF::$version) ? \XF::$version : '';
 	}
 
 	/**
@@ -97,7 +107,7 @@ class CommandHider
 	{
 		$config = \XF::config($mode);
 
-		return !empty($config['enabled']);
+		return is_array($config) && !empty($config['enabled']);
 	}
 
 	/**

@@ -122,7 +122,15 @@ is a sandbox with the modes off; `TESTING.md` has the checks.
 ```bash
 composer install
 vendor/bin/phpunit
+vendor/bin/phpstan analyse                    # level max, no baseline
+vendor/bin/xenforo-phpstan generate --check   # read-only; never run generate itself
 ```
+
+**PHPStan runs at max with no baseline**, through `hampel/xenforo-phpstan`. `generate` writes the
+stub set into the forum's `internal_data/`, which every add-on on that forum reads, so check it and
+leave regenerating it to whoever is working on the forum itself. XenForo's untyped statics,
+`\XF::$version` and `\XF::config()`, are narrowed where they are read rather than cast;
+`CommandHider::xenForoVersion()` is the one place the version string is checked.
 
 **`forumConsole()` in `tests/TestCase.php` registers every command the way `XF\Cli\Runner` does**,
 through an anonymous subclass that exposes `registerCommands()`, so the tests run against the 129

@@ -41,7 +41,7 @@ class Config extends Command
 		$addOn = \XF::app()->addOnManager()->getById('Hampel/HideDevCommands');
 		$json = $addOn ? $addOn->getJson() : [];
 		$this->detail('add-on', is_string($json['version_string'] ?? null) ? $json['version_string'] : '');
-		$this->detail('XenForo', \XF::$version);
+		$this->detail('XenForo', CommandHider::xenForoVersion());
 
 		$this->heading('Modes');
 		foreach (['development', 'designer'] AS $mode)
@@ -68,7 +68,7 @@ class Config extends Command
 			});
 
 			$summary = !$commands && !is_dir(CommandHider::familyDirectory($prefix))
-				? $this->muted('not in XenForo ' . \XF::$version)
+				? $this->muted('not in XenForo ' . CommandHider::xenForoVersion())
 				: $this->summary(count($commands), count($hidden), $family['mode']);
 			$this->detail($family['label'], $summary);
 			$listed = array_merge($listed, array_keys($hidden));

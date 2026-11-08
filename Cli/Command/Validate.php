@@ -142,7 +142,7 @@ class Validate extends Command
 			}
 			else
 			{
-				$this->checkSkip($label, 'not in XenForo ' . \XF::$version);
+				$this->checkSkip($label, 'not in XenForo ' . CommandHider::xenForoVersion());
 			}
 
 			return;

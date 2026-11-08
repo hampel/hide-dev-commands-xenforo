@@ -156,7 +156,7 @@ class CommandsTest extends TestCase
 	{
 		$this->fakesErrors();
 		$this->setModes(true, true);
-		$console = new class ('XenForo', \XF::$version) extends Application
+		$console = new class ('XenForo', CommandHider::xenForoVersion()) extends Application
 		{
 			public function all(?string $namespace = null): array
 			{
@@ -178,7 +178,7 @@ class CommandsTest extends TestCase
 
 	private function consoleWith(Command ...$commands): Application
 	{
-		$console = new Application('XenForo', \XF::$version);
+		$console = new Application('XenForo', CommandHider::xenForoVersion());
 		$console->setAutoExit(false);
 		foreach ($commands AS $command)
 		{
