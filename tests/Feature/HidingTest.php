@@ -2,7 +2,6 @@
 
 use Hampel\HideDevCommands\CommandHider;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Exception\NamespaceNotFoundException;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -220,10 +219,7 @@ class HidingTest extends TestCase
 		{
 			if (in_array($prefix, $prefixes, true))
 			{
-				$names = array_merge($names, array_map(function (Command $command)
-				{
-					return $command->getName();
-				}, array_values($commands)));
+				$names = array_merge($names, array_keys($commands));
 			}
 		}
 		sort($names);
