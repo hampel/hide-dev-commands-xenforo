@@ -16,7 +16,7 @@ abstract class TestCase extends BaseTestCase
 	protected $rootDir = '../../../..';
 
 	/**
-	 * @var array $addonsToLoad load only this addon, so that another addon's vendor tree and
+	 * @var string[] $addonsToLoad load only this addon, so that another addon's vendor tree and
 	 * listeners cannot affect the run
 	 */
 	protected $addonsToLoad = ['Hampel/HideDevCommands'];
