@@ -127,3 +127,11 @@ first install from a built zip rather than the working copy. Every *Needs a huma
 `list` showed none of the three families, `validate --strict` exited 0, `xf-dev:inf` and
 `xf-dev:info` refused without logging an error, `config` reported every family hidden and
 blocked, and the forums' other CLI commands ran as before.
+
+**2026-11-08, `1.0.0a2`**: the whole *Needs a human* section passed again on XenForo 2.3.13 with PHP
+8.3.36 and on 2.2.19 Patch 2 with PHP 7.4.33, set up as for a1, with a scratch add-on whose one
+command uses `RequiresDevModeTrait`. That command was hidden with development mode off, refused by
+name, and came back with the mode. The hide list hid `xf-rebuild:*` (13 on 2.3, 6 on 2.2) and an
+exact name, which still ran by that name; an abbreviation of it logged nothing; an entry matching
+nothing gave exit 0, and 2 under `--strict`. The run found `config` reporting itself as not hidden
+when listed, fixed before release. The add-on's PHP files linted clean on 7.4.
