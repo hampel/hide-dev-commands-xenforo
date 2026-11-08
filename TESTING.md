@@ -111,3 +111,9 @@ Patch 2 with PHP 7.4.33, under `xf-cli` 0.5.1, with the working copy mounted rea
 and designer off in `config.override.php`, and the add-on installed by id from `_data/`. That run
 found the abbreviation regression and the 2.2 `xf-make:*` warning, both fixed before the
 re-run. `validate --strict` exited 0 on both, and the add-on's PHP files linted clean on 7.4.
+
+**2026-11-08, `1.0.0a1` release zip**: installed on production forums with both modes off, the
+first install from a built zip rather than the working copy. Every *Needs a human* check passed:
+`list` showed none of the three families, `validate --strict` exited 0, `xf-dev:inf` and
+`xf-dev:info` refused without logging an error, `config` reported every family hidden and
+blocked, and the forums' other CLI commands ran as before.
