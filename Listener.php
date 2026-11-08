@@ -14,4 +14,18 @@ class Listener
 	{
 		CommandHider::apply(null, (new ArgvInput())->getFirstArgument());
 	}
+
+	/**
+	 * Tells the Admin API add-on which of this add-on's settings are secrets, so it can show the
+	 * rest. There are none to tell: the add-on has no options and reads only core's `development`
+	 * and `designer` keys from config.php, which are XenForo's to declare, not this add-on's.
+	 *
+	 * The event exists only where that add-on is installed; elsewhere this is never called.
+	 *
+	 * @param array $declarations
+	 */
+	public static function adminApiRedaction(array &$declarations)
+	{
+		$declarations['Hampel/HideDevCommands'] = [];
+	}
 }

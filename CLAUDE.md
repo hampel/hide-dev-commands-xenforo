@@ -87,11 +87,15 @@ reads Symfony's private `Command::$code` on every hidden command. The `xf-dev:in
 command, where it exists, because it only reads and prints. On 2.2 the one unguarded development
 command is `xf-dev:metadata-fix`, which rewrites a file if the block has failed, so it is never run.
 
-### The add-on declares no secrets, and does not answer `hampel_admin_api_redaction`
+### The add-on declares that it has no secrets
 
-The declaration is for an add-on with options or `config.php` keys. This one has neither: it reads
-core's `development` and `designer` keys and owns none. Add the listener in the commit that adds the
-first setting; `xenforo-addon-secrets` has it.
+`Listener::adminApiRedaction()` answers `hampel_admin_api_redaction` with an empty entry, because an
+add-on that does not answer is withheld by the Admin API rather than shown. It has no options, and
+reads only core's `development` and `designer` keys, which are XenForo's to declare. The event fires
+only where the Admin API add-on is installed; nothing requires it.
+
+**`SecretsDeclarationTest` fails the day an option is added**, which is the moment to decide
+whether it is a secret and declare it. `xenforo-addon-secrets` has the procedure.
 
 ### `--unattended` changes nothing
 
