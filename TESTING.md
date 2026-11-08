@@ -135,3 +135,7 @@ name, and came back with the mode. The hide list hid `xf-rebuild:*` (13 on 2.3, 
 exact name, which still ran by that name; an abbreviation of it logged nothing; an entry matching
 nothing gave exit 0, and 2 under `--strict`. The run found `config` reporting itself as not hidden
 when listed, fixed before release. The add-on's PHP files linted clean on 7.4.
+
+**2026-11-08, `1.0.0a2` release zip**: upgraded from a1 on production forums with both modes off.
+Every check passed: `validate --strict` exited 0 with the new guard and hide-list rows, and a
+`config.php` hide list left its commands out of `list` while they still ran by name.
