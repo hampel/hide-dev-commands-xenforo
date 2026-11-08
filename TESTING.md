@@ -1,10 +1,65 @@
 # Testing Hide Development Commands
 
-The checks the PHPUnit suite cannot make: it turns the modes off with `setConfig()` inside one
-process, but it never goes through `cmd.php`, where the order of registration, app start and the
-listener is what the add-on depends on.
+What this add-on touches, where it breaks quietly, and which checks a session can run on its own
+against the ones that need a forum with development and designer mode off. `CLAUDE.md` explains
+the mechanism; this file is the checklist.
 
-## On a sandbox with the modes off
+## Surfaces
+
+| surface | what it is for |
+|---|---|
+| `app_cli_start_end` → `Listener::appCliStartEnd()` | hides and blocks the families whose mode is off, once every command is registered and none has run |
+| `hampel_admin_api_redaction` → `Listener::adminApiRedaction()` | declares that the add-on has no secrets, so the Admin API shows rather than withholds it |
+| `Command::setApplication()`, overridden by `Cli\CapturesConsole` | Symfony's own call when a command is registered: the only point at which the console application can be reached |
+| `hide-dev-commands:config` | prints the modes and what each family's state is as a result |
+| `hide-dev-commands:validate` | proves the capture, the listener, the families and the block |
+
+No class extensions, template modifications, options, phrases or database tables.
+
+## Fragile points
+
+- **Every link in the capture chain is a XenForo or Symfony internal, not an API**: `cmd.php`
+  building the runner with `new`, registration before the app starts, and `add()` calling
+  `setApplication()`. A break fails safe — the commands are shown again — and `validate` is what
+  notices. `CLAUDE.md`, *No XenForo hook reaches the command list*.
+- **The `blocked` check reads Symfony's private `Command::$code` by reflection.** A console that
+  renames it makes that row fail rather than the block itself.
+- **The runner resolves the typed name twice.** Hiding the command being run turns an
+  abbreviation into a logged server error. `CLAUDE.md`, *The command being run is blocked but not
+  hidden*.
+- **The families differ by XenForo version.** 2.2 and 2.3.0 Patch 2 have no `xf-make:*`, and 2.2
+  has no `xf-dev:info`. `CLAUDE.md`, *Not every family exists on every supported XenForo*.
+
+## Automated
+
+From the add-on root, on a development install:
+
+```bash
+vendor/bin/phpunit                                        # 28 tests on 2.3.13
+vendor/bin/phpstan analyse                                # level max, no baseline
+php ../../../../cmd.php hide-dev-commands:validate --strict; echo $?   # expect 0
+```
+
+- **The suite registers all of this XenForo's real commands** through `XF\Cli\Runner`'s own
+  `registerCommands()`, turns the modes off with `setConfig()`, and checks:
+  - what is hidden for each combination of modes, and that nothing outside the three families is;
+  - that `list` and `list xf-dev` show none of them;
+  - that an exact name and an abbreviation both refuse;
+  - the `validate` exit codes;
+  - the secrets declaration.
+- **`validate` on a development install proves the capture and the listener**, and that each
+  family is still found. With both modes on, it skips the block rows: there is nothing blocked to
+  check.
+
+**What none of it reaches is `cmd.php` itself**, where the order of registration, app start and
+the listener is what the add-on depends on. The suite runs everything in one process. The
+development install has both modes on, because other work needs them.
+
+## Needs a human
+
+A disposable forum with both modes off, on each supported XenForo line, before a release.
+
+### On a sandbox with the modes off
 
 **Use a disposable instance, not a development install**, because a development install needs both
 modes on for everything else it is used for. `xenforo-addon-sandbox` builds one. Install the add-on,
@@ -34,7 +89,7 @@ Then:
 - **disable the add-on** with both modes off, and check the full list comes back and
   `hide-dev-commands:validate` refuses as a command of an inactive add-on.
 
-## On XenForo 2.2
+### On XenForo 2.2
 
 **Repeat the first block on a 2.2 sandbox before a release.** 2.2 ships its own fork of Symfony
 Console, and the `gray` colour trap in `xenforo-addon-validate` is the precedent for reading 2.2's
@@ -46,8 +101,8 @@ Three answers differ there, and none is a failure:
 - `xf-dev:inf` and `xf-dev:info` print "Command is not defined" with a "Did you mean" list, because
   2.2 has no `xf-dev:info`;
 - `validate` shows `xf-make:*` and `xf-dev:info` as blank skips, since 2.2 has neither;
-- `xf-dev:metadata-fix /tmp` refuses with "Development mode is not enabled" from this add-on's block,
-  since that command has no guard of its own on 2.2.
+- `xf-dev:metadata-fix /tmp` refuses with "Development mode is not enabled" from this add-on's
+  block, since that command has no guard of its own on 2.2.
 
 ## The record
 
