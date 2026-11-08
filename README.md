@@ -49,7 +49,7 @@ pattern. This applies whatever the modes are:
 ```php
 $config['hideDevCommands']['hide'] = [
     'xf-rebuild:*',
-    'xf:addon-list',
+    'xf:rebuild-master-data',
 ];
 ```
 

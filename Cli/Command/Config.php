@@ -91,11 +91,14 @@ class Config extends Command
 				? ''
 				: 'empty, or not a list of names - see hide-dev-commands:validate');
 		}
+		// the command running is left visible while it runs, so it counts as hidden here, as it does
+		// in validate - otherwise listing this command reports it as not hidden
+		$running = CommandHider::running();
 		foreach ($configured AS $pattern => $commands)
 		{
-			$hidden = array_keys(array_filter($commands, function (Command $command)
+			$hidden = array_keys(array_filter($commands, function (Command $command) use ($running)
 			{
-				return $command->isHidden();
+				return $command->isHidden() || $command === $running;
 			}));
 			$this->detail($pattern, $commands
 				? count($commands) . ' matched, ' . count($hidden) . ' hidden ' . $this->muted('(still runs by name)')

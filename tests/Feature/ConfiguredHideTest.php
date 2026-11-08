@@ -52,6 +52,21 @@ class ConfiguredHideTest extends TestCase
 		$this->assertTrue($console->find('xf:addon-install')->isHidden());
 	}
 
+	/**
+	 * Found in a 2.3.13 sandbox: config listed by name and then run read "1 matched, 0 hidden",
+	 * because it is the command running and so is left visible.
+	 */
+	public function test_config_counts_itself_as_hidden_when_it_is_listed(): void
+	{
+		$this->hide(['hide-dev-commands:config']);
+		$console = $this->forumConsole();
+		CommandHider::apply(null, 'hide-dev-commands:config');
+
+		[, $output] = $this->runIn($console, 'hide-dev-commands:config');
+
+		$this->assertMatchesRegularExpression('/hide-dev-commands:config \.+ 1 matched, 1 hidden/', $output);
+	}
+
 	public function test_a_single_string_is_taken_as_a_list_of_one(): void
 	{
 		$this->setConfig(CommandHider::CONFIG_KEY, ['hide' => 'xf:addon-list']);
