@@ -41,9 +41,25 @@ name or an abbreviation, it refuses. `help <command>` still describes it.
 of these?" with the hidden commands in it, because XenForo looks the name up before any add-on has
 loaded. Nothing an add-on can do reaches that point.
 
+## Hiding other commands
+
+**List any command you do not want in `cmd.php list` in `config.php`**, by name or with a `*`
+pattern. This applies whatever the modes are:
+
+```php
+$config['hideDevCommands']['hide'] = [
+    'xf-rebuild:*',
+    'xf:addon-list',
+];
+```
+
+**These are hidden, not blocked.** Each still runs when typed by its exact name, so a cron job or a
+script that calls one carries on working. `hide-dev-commands:validate` warns about an entry that
+matches no command.
+
 ## Usage
 
-Install it. There are no options.
+Install it. There are no options; the one setting is the `config.php` list above.
 
 ```bash
 php cmd.php hide-dev-commands:config      # which modes are on, and what is hidden

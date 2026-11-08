@@ -49,6 +49,13 @@ name. Run it on every new XenForo version.
   and traits, because `class_uses()` reports only what a class declares itself. No core command
   outside the three namespaces uses either trait, and both traits are in 2.2.0 Patch 2. A command
   that checks the mode by hand is not detected; the `config.php` list is for that.
+- **Commands named in `config.php` are hidden, never blocked, from 1.0.0a2.**
+  `$config['hideDevCommands']['hide']` takes exact names and `fnmatch()` patterns and applies
+  whatever the modes. The commands an administrator wants out of the list are usually working ones
+  that cron or a script calls by name, so blocking them would turn a tidy-up into a silent outage.
+  `config.php` rather than an option, because only someone with a shell runs `cmd.php`, and the
+  modes this sits beside are set there too. The command being run is left visible, as for the
+  families. `validate` warns about an entry that matches nothing, which is usually a typo.
 - **Designer commands follow designer mode, not development mode**, because that is what
   `RequiresDesignerModeTrait` checks. Otherwise a forum with designer mode on and development off
   would have working commands hidden.
@@ -94,10 +101,12 @@ command is `xf-dev:metadata-fix`, which rewrites a file if the block has failed,
 
 ### The add-on declares that it has no secrets
 
-`Listener::adminApiRedaction()` answers `hampel_admin_api_redaction` with an empty entry, because an
-add-on that does not answer is withheld by the Admin API rather than shown. It has no options, and
-reads only core's `development` and `designer` keys, which are XenForo's to declare. The event fires
-only where the Admin API add-on is installed; nothing requires it.
+`Listener::adminApiRedaction()` answers `hampel_admin_api_redaction`, because an add-on that does
+not answer is withheld by the Admin API rather than shown. It has no options. It claims its one
+`config.php` key, `hideDevCommands`, with no secret paths under it: the key holds command names, and
+claiming it is what lets the Admin API show it. Core's `development` and `designer` keys, which it
+also reads, are XenForo's to declare. The event fires only where the Admin API add-on is installed;
+nothing requires it.
 
 **`SecretsDeclarationTest` fails the day an option is added**, which is the moment to decide
 whether it is a secret and declare it. `xenforo-addon-secrets` has the procedure.

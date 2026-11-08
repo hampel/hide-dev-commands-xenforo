@@ -17,8 +17,9 @@ class Listener
 
 	/**
 	 * Tells the Admin API add-on which of this add-on's settings are secrets, so it can show the
-	 * rest. There are none to tell: the add-on has no options and reads only core's `development`
-	 * and `designer` keys from config.php, which are XenForo's to declare, not this add-on's.
+	 * rest. None is: the add-on has no options, and its one config.php key lists command names.
+	 * The key is still claimed, because claiming it is what lets the Admin API show it. Core's
+	 * `development` and `designer` keys, which it also reads, are XenForo's to declare.
 	 *
 	 * The event exists only where that add-on is installed; elsewhere this is never called.
 	 *
@@ -26,6 +27,8 @@ class Listener
 	 */
 	public static function adminApiRedaction(array &$declarations): void
 	{
-		$declarations['Hampel/HideDevCommands'] = [];
+		$declarations['Hampel/HideDevCommands'] = [
+			'config' => [CommandHider::CONFIG_KEY => []],
+		];
 	}
 }

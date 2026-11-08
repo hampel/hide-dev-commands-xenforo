@@ -8,7 +8,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Hides XenForo's development, make and designer commands from cmd.php when the mode each one
  * needs is off, and makes each refuse to run by its exact name - and any add-on's command that
- * guards itself with the same traits.
+ * guards itself with the same traits. It also hides, without blocking, any command named in
+ * config.php.
  *
  * No XenForo hook offers the console application: cmd.php builds the runner with a plain
  * `new Runner()`, commands are registered before the app starts and so before any listener is
@@ -44,8 +45,17 @@ class CommandHider
 		'XF\\Cli\\Command\\Designer\\RequiresDesignerModeTrait' => ['mode' => 'designer', 'label' => 'add-on, designer'],
 	];
 
+	/**
+	 * The config.php key for the commands an administrator wants out of the list:
+	 * `$config['hideDevCommands']['hide'] = ['xf:rebuild-*', ...]`.
+	 */
+	public const CONFIG_KEY = 'hideDevCommands';
+
 	/** @var Application|null */
 	private static $console = null;
+
+	/** @var Command|null */
+	private static $running = null;
 
 	/** @var bool */
 	private static $applied = false;
@@ -78,6 +88,95 @@ class CommandHider
 	{
 		self::$console = null;
 		self::$applied = false;
+		self::$running = null;
+	}
+
+	/**
+	 * The command this process is running, which apply() leaves visible - see apply().
+	 */
+	public static function running(): ?Command
+	{
+		return self::$running;
+	}
+
+	/**
+	 * What config.php lists under hideDevCommands.hide, as it is: null when it is not set, so that
+	 * validate can tell a missing list from a malformed one.
+	 *
+	 * @return mixed
+	 */
+	public static function configuredRaw()
+	{
+		$config = \XF::config(self::CONFIG_KEY);
+
+		return is_array($config) && array_key_exists('hide', $config) ? $config['hide'] : null;
+	}
+
+	/**
+	 * The names and fnmatch() patterns config.php lists, ignoring anything that is not a non-empty
+	 * string.
+	 *
+	 * @return string[]
+	 */
+	public static function configuredPatterns(): array
+	{
+		$raw = self::configuredRaw();
+		if (is_string($raw))
+		{
+			$raw = [$raw];
+		}
+		if (!is_array($raw))
+		{
+			return [];
+		}
+
+		$patterns = [];
+		foreach ($raw AS $pattern)
+		{
+			if (is_string($pattern) && trim($pattern) !== '')
+			{
+				$patterns[] = trim($pattern);
+			}
+		}
+
+		return array_values(array_unique($patterns));
+	}
+
+	/**
+	 * Each configured pattern and the registered commands it matches by name, once each.
+	 *
+	 * @return array<string, array<string, Command>> pattern => command name => command
+	 */
+	public static function configured(Application $console): array
+	{
+		$matched = array_fill_keys(self::configuredPatterns(), []);
+		$seen = [];
+
+		foreach ($console->all() AS $command)
+		{
+			$id = spl_object_id($command);
+			if (isset($seen[$id]))
+			{
+				continue;
+			}
+			$seen[$id] = true;
+
+			$name = (string) $command->getName();
+			foreach (array_keys($matched) AS $pattern)
+			{
+				if (fnmatch($pattern, $name))
+				{
+					$matched[$pattern][$name] = $command;
+				}
+			}
+		}
+
+		foreach ($matched AS &$commands)
+		{
+			ksort($commands);
+		}
+
+		return $matched;
 	}
 
 	/**
@@ -211,7 +310,8 @@ class CommandHider
 	}
 
 	/**
-	 * Hide and block every command whose mode is off.
+	 * Hide and block every command whose mode is off, and hide - without blocking - every command
+	 * config.php lists.
 	 *
 	 * $requested is what was typed as the command name, which XF\Cli\Runner has already resolved
 	 * once, before the app started and so before anything was hidden; Symfony resolves it again
@@ -232,6 +332,7 @@ class CommandHider
 
 		self::$applied = true;
 		$running = self::resolve($console, $requested);
+		self::$running = $running;
 		$hidden = 0;
 
 		foreach (self::families($console) AS $key => $commands)
@@ -250,6 +351,22 @@ class CommandHider
 					$command->setHidden(true);
 					$hidden++;
 				}
+			}
+		}
+
+		// hidden only, never blocked: these are working commands, and cron or a script may still
+		// call one by its exact name
+		$listed = [];
+		foreach (self::configured($console) AS $commands)
+		{
+			$listed += $commands;
+		}
+		foreach ($listed AS $command)
+		{
+			if ($command !== $running && !$command->isHidden())
+			{
+				$command->setHidden(true);
+				$hidden++;
 			}
 		}
 

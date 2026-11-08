@@ -8,11 +8,13 @@ the mechanism; this file is the checklist.
 
 | surface | what it is for |
 |---|---|
-| `app_cli_start_end` → `Listener::appCliStartEnd()` | hides and blocks the families whose mode is off, once every command is registered and none has run |
-| `hampel_admin_api_redaction` → `Listener::adminApiRedaction()` | declares that the add-on has no secrets, so the Admin API shows rather than withholds it |
+| `app_cli_start_end` → `Listener::appCliStartEnd()` | hides and blocks the families whose mode is off, and hides the commands `config.php` lists, once every command is registered and none has run |
+| `hampel_admin_api_redaction` → `Listener::adminApiRedaction()` | claims the `hideDevCommands` key with no secrets in it, so the Admin API shows rather than withholds it |
+| `$config['hideDevCommands']['hide']` | names and `*` patterns of commands to hide, never block |
+| `RequiresDevModeTrait`, `RequiresDesignerModeTrait` | core's guard traits: another add-on's command that uses one is hidden with its mode |
 | `Command::setApplication()`, overridden by `Cli\CapturesConsole` | Symfony's own call when a command is registered: the only point at which the console application can be reached |
 | `hide-dev-commands:config` | prints the modes and what each family's state is as a result |
-| `hide-dev-commands:validate` | proves the capture, the listener, the families and the block |
+| `hide-dev-commands:validate` | proves the capture, the listener, the families, the block and the hide list |
 
 No class extensions, template modifications, options, phrases or database tables.
 
@@ -27,6 +29,8 @@ No class extensions, template modifications, options, phrases or database tables
 - **The runner resolves the typed name twice.** Hiding the command being run turns an
   abbreviation into a logged server error. `CLAUDE.md`, *The command being run is blocked but not
   hidden*.
+- **A guarded command is found by its trait, not its name.** An add-on that checks the mode by
+  hand rather than through a trait is not detected; the `config.php` list is the way to hide it.
 - **The families differ by XenForo version.** 2.2 and 2.3.0 Patch 2 have no `xf-make:*`, and 2.2
   has no `xf-dev:info`. `CLAUDE.md`, *Not every family exists on every supported XenForo*.
 
@@ -86,6 +90,12 @@ Then:
   again while `xf-designer:*` stays hidden;
 - **turn designer mode on as well**, and check all 129 are listed (on 2.3.13; count `list` before
   installing to have the number for another version);
+- **with both modes on, list `xf-rebuild:*` and one exact name** under
+  `$config['hideDevCommands']['hide']`, and check `list` leaves them out, that one still runs by
+  its exact name, and that `validate --strict` exits 0; then add an entry that matches nothing and
+  check it exits 2;
+- **where another add-on's command uses a guard trait**, check it is hidden with its mode and
+  refuses by name;
 - **disable the add-on** with both modes off, and check the full list comes back and
   `hide-dev-commands:validate` refuses as a command of an inactive add-on.
 

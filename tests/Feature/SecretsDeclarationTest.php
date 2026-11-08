@@ -1,22 +1,31 @@
 <?php namespace Tests\Feature;
 
+use Hampel\HideDevCommands\CommandHider;
 use Hampel\HideDevCommands\Listener;
 use Tests\TestCase;
 
 /**
- * The add-on declares that it has no secrets. That stays true only while it has no options, so the
- * second test fails the day one is added, which is when the declaration has to be reconsidered.
+ * The add-on declares that it has no secrets, and claims its one config.php key so the Admin API
+ * shows it. That stays true only while it has no options, so the second test fails the day one is
+ * added, which is when the declaration has to be reconsidered.
  * Every test asserts once, outside any loop: an assertion inside a loop over nothing asserts
  * nothing.
  */
 class SecretsDeclarationTest extends TestCase
 {
-	public function test_it_declares_this_add_on_only_and_declares_nothing(): void
+	public function test_it_declares_this_add_on_only_and_claims_its_key_with_no_secrets(): void
 	{
 		$declarations = [];
 		Listener::adminApiRedaction($declarations);
 
-		$this->assertSame(['Hampel/HideDevCommands' => []], $declarations);
+		$this->assertSame(['Hampel/HideDevCommands' => ['config' => ['hideDevCommands' => []]]], $declarations);
+	}
+
+	public function test_the_claimed_key_is_the_one_the_add_on_reads(): void
+	{
+		$this->setConfig('hideDevCommands', ['hide' => ['xf:addon-list']]);
+
+		$this->assertSame(['xf:addon-list'], CommandHider::configuredPatterns());
 	}
 
 	public function test_the_add_on_still_has_no_options_to_declare(): void

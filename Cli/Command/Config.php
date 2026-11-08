@@ -83,6 +83,27 @@ class Config extends Command
 			$listed = array_merge($listed, array_keys($hidden));
 		}
 
+		$this->heading('Hidden by config.php');
+		$configured = CommandHider::configured($console);
+		if (!$configured)
+		{
+			$this->detail('hide list', CommandHider::configuredRaw() === null
+				? ''
+				: 'empty, or not a list of names - see hide-dev-commands:validate');
+		}
+		foreach ($configured AS $pattern => $commands)
+		{
+			$hidden = array_keys(array_filter($commands, function (Command $command)
+			{
+				return $command->isHidden();
+			}));
+			$this->detail($pattern, $commands
+				? count($commands) . ' matched, ' . count($hidden) . ' hidden ' . $this->muted('(still runs by name)')
+				: 'matches no command');
+			$listed = array_merge($listed, $hidden);
+		}
+		$listed = array_values(array_unique($listed));
+
 		if ($input->getOption('commands') && $listed)
 		{
 			$this->heading('Hidden');

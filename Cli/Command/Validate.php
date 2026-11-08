@@ -17,6 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * from add(), the app_cli_start_end event, and core keeping its commands in the namespaces this
  * matches - so this is the command to run after every XenForo upgrade.
  *
+ * It also checks the commands config.php lists are hidden, and that every entry matches one.
+ *
  * It sends nothing and writes nothing, so --unattended is accepted, for the command line a monitor
  * runs against every add-on, and changes nothing.
  *
@@ -88,6 +90,19 @@ class Validate extends Command
 			$this->probe('xf-dev:info', function () use ($console)
 			{
 				$this->refusesByName($console);
+			});
+		}
+
+		$this->checkSection('Configured');
+		if ($console === null)
+		{
+			$this->checkSkip('hide list', 'no console application to inspect');
+		}
+		else
+		{
+			$this->probe('hide list', function () use ($console)
+			{
+				$this->hideList($console);
 			});
 		}
 
@@ -253,5 +268,69 @@ class Validate extends Command
 		}
 
 		$this->checkFail('xf-dev:info', "ran when named exactly, exit {$code}");
+	}
+
+	/**
+	 * The commands config.php lists are hidden, and every entry matches something - a pattern that
+	 * matches nothing is usually a typo, and would otherwise do nothing without a word.
+	 */
+	private function hideList(Application $console): void
+	{
+		$raw = CommandHider::configuredRaw();
+		if ($raw === null)
+		{
+			$this->checkSkip('hide list', 'nothing listed in config.php');
+
+			return;
+		}
+
+		$key = "\$config['" . CommandHider::CONFIG_KEY . "']['hide']";
+		$valid = is_string($raw) || (is_array($raw) && count(array_filter($raw, 'is_string')) === count($raw));
+		if (!$valid)
+		{
+			$this->checkWarn('hide list', "{$key} should be a list of command names or patterns");
+
+			return;
+		}
+
+		$configured = CommandHider::configured($console);
+		if (!$configured)
+		{
+			$this->checkWarn('hide list', "{$key} is empty");
+
+			return;
+		}
+
+		$running = CommandHider::running();
+		$listed = [];
+		foreach ($configured AS $commands)
+		{
+			$listed += $commands;
+		}
+		$shown = array_keys(array_filter($listed, function (Command $command) use ($running)
+		{
+			return !$command->isHidden() && $command !== $running;
+		}));
+
+		if ($shown)
+		{
+			$this->checkFail('hide list', count($shown) . ' of ' . count($listed) . " listed commands are shown, such as {$shown[0]}");
+
+			return;
+		}
+
+		$unmatched = array_keys(array_filter($configured, function (array $commands)
+		{
+			return !$commands;
+		}));
+		if ($unmatched)
+		{
+			$this->checkWarn('hide list', 'matches no command: ' . implode(', ', $unmatched));
+
+			return;
+		}
+
+		$this->checkOk('hide list', count($listed) . ' hidden by ' . count($configured) . ' '
+			. (count($configured) === 1 ? 'entry' : 'entries') . ' in config.php');
 	}
 }
