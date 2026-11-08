@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b138b91d21f05690f643caf9665c283f",
+    "content-hash": "5e3524f0823990e3994f63eb3dbcd0a4",
     "packages": [],
     "packages-dev": [
         {
@@ -62,6 +62,71 @@
             },
             "time": "2026-03-17T11:56:53+00:00",
             "published-time": "2026-06-16T10:52:40+00:00"
+        },
+        {
+            "name": "hampel/xenforo-phpstan",
+            "version": "0.10.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/hampel/xenforo-phpstan.git",
+                "reference": "a093be389e470deb0ca289a6bec2d5ff53ce5ac6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/hampel/xenforo-phpstan/zipball/a093be389e470deb0ca289a6bec2d5ff53ce5ac6",
+                "reference": "a093be389e470deb0ca289a6bec2d5ff53ce5ac6",
+                "shasum": ""
+            },
+            "require": {
+                "ext-simplexml": "*",
+                "php": ">=8.3",
+                "phpstan/phpstan": "^2.1.22"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.30",
+                "phpunit/phpunit": "^12.0"
+            },
+            "bin": [
+                "bin/xenforo-phpstan"
+            ],
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "extension.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Hampel\\XenForo\\PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Hampel",
+                    "email": "simon@hampelgroup.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHPStan for XenForo add-ons - the configuration an add-on needs to be analysed against a forum, the methods class extensions add to core classes, the container shortcuts, and the legacy class names XenForo 2.3 aliases at runtime",
+            "homepage": "https://github.com/hampel/xenforo-phpstan",
+            "keywords": [
+                "PHPStan",
+                "phpstan-extension",
+                "static analysis",
+                "xenforo"
+            ],
+            "support": {
+                "issues": "https://github.com/hampel/xenforo-phpstan/issues",
+                "source": "https://github.com/hampel/xenforo-phpstan"
+            },
+            "time": "2026-10-25T09:39:16+00:00",
+            "published-time": "2026-10-25T23:38:41+00:00"
         },
         {
             "name": "hampel/xenforo-test-framework",
@@ -452,6 +517,71 @@
             },
             "time": "2022-02-21T01:04:05+00:00",
             "published-time": "2022-02-21T01:04:30+00:00"
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "2.3.5",
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/645a1bd6bead15fc1b8474137467961d0fa30a79",
+                "reference": "645a1bd6bead15fc1b8474137467961d0fa30a79",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4|^8.0"
+            },
+            "conflict": {
+                "phpstan/phpstan-shim": "*"
+            },
+            "bin": [
+                "phpstan",
+                "phpstan.phar"
+            ],
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ondřej Mirtes"
+                },
+                {
+                    "name": "Markus Staab"
+                },
+                {
+                    "name": "Vincent Langlet"
+                }
+            ],
+            "description": "PHPStan - PHP Static Analysis Tool",
+            "keywords": [
+                "dev",
+                "static analysis"
+            ],
+            "support": {
+                "docs": "https://phpstan.org/user-guide/getting-started",
+                "forum": "https://github.com/phpstan/phpstan/discussions",
+                "issues": "https://github.com/phpstan/phpstan/issues",
+                "security": "https://github.com/phpstan/phpstan/security/policy",
+                "source": "https://github.com/phpstan/phpstan-src"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/ondrejmirtes",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/phpstan",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-11-03T12:14:22+00:00",
+            "published-time": "2026-11-03T12:14:36+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

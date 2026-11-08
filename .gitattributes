@@ -12,5 +12,6 @@
 /CLAUDE.md        export-ignore
 /CLAUDE.local.md  export-ignore
 /TESTING.md       export-ignore
+/phpstan.neon     export-ignore
 /.gitattributes   export-ignore
 /.gitignore       export-ignore
