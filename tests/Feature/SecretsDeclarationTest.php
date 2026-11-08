@@ -39,7 +39,7 @@ class SecretsDeclarationTest extends TestCase
 		{
 			$contents = file_get_contents($file);
 			$listener = $contents === false ? null : json_decode($contents, true);
-			if (isset($listener['event_id']))
+			if (is_array($listener) && is_string($listener['event_id'] ?? null) && is_string($listener['callback_method'] ?? null))
 			{
 				$registered[] = $listener['event_id'] . ' ' . $listener['callback_method'];
 			}

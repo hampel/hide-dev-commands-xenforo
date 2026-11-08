@@ -51,16 +51,12 @@ class Validate extends Command
 	{
 		$this->report = $output;
 
+		// reads two static properties and cannot throw, so it needs no probe
 		$this->checkSection('Mechanism');
-		$console = $this->probe('console captured', function ()
-		{
-			return $this->captured();
-		});
-		$this->probe('listener ran', function ()
-		{
-			$this->listenerRan();
-		});
+		$console = $this->captured();
+		$this->listenerRan();
 
+		// each probe asks for the families itself, so one that throws costs its own row only
 		$this->checkSection('Commands');
 		if ($console === null)
 		{
@@ -68,14 +64,13 @@ class Validate extends Command
 		}
 		else
 		{
-			$families = $this->probe('families', function () use ($console)
+			$this->probe('families', function () use ($console)
 			{
-				return CommandHider::families($console);
+				foreach (CommandHider::families($console) AS $prefix => $commands)
+				{
+					$this->family($prefix, $commands);
+				}
 			});
-			foreach ($families ?? [] AS $prefix => $commands)
-			{
-				$this->family($prefix, $commands);
-			}
 		}
 
 		$this->checkSection('Blocking');
@@ -86,9 +81,9 @@ class Validate extends Command
 		}
 		else
 		{
-			$this->probe('blocked', function () use ($families)
+			$this->probe('blocked', function () use ($console)
 			{
-				$this->blocked($families ?? []);
+				$this->blocked(CommandHider::families($console));
 			});
 			$this->probe('xf-dev:info', function () use ($console)
 			{

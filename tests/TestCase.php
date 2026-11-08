@@ -59,8 +59,11 @@ abstract class TestCase extends BaseTestCase
 
 	protected function setModes(bool $development, bool $designer): void
 	{
-		$this->setConfig('development', array_replace($this->app()->config('development'), ['enabled' => $development]));
-		$this->setConfig('designer', array_replace($this->app()->config('designer'), ['enabled' => $designer]));
+		foreach (['development' => $development, 'designer' => $designer] AS $mode => $enabled)
+		{
+			$current = $this->app()->config($mode);
+			$this->setConfig($mode, array_replace(is_array($current) ? $current : [], ['enabled' => $enabled]));
+		}
 	}
 
 	/**

@@ -39,7 +39,8 @@ class Config extends Command
 
 		$this->heading('Hide Development Commands');
 		$addOn = \XF::app()->addOnManager()->getById('Hampel/HideDevCommands');
-		$this->detail('add-on', $addOn ? (string) $addOn->getJson()['version_string'] : '');
+		$json = $addOn ? $addOn->getJson() : [];
+		$this->detail('add-on', is_string($json['version_string'] ?? null) ? $json['version_string'] : '');
 		$this->detail('XenForo', \XF::$version);
 
 		$this->heading('Modes');
