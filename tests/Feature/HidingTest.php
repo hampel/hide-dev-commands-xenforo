@@ -27,7 +27,7 @@ class HidingTest extends TestCase
 		$problems = [];
 		foreach ($families AS $prefix => $commands)
 		{
-			if (!$commands)
+			if (!$commands && isset(CommandHider::FAMILIES[$prefix]))
 			{
 				$problems[] = "nothing under {$prefix}";
 			}
@@ -60,7 +60,11 @@ class HidingTest extends TestCase
 		$console = $this->forumConsole();
 		$hidden = $this->hiddenByApply($console);
 
-		$expected = $this->familyNames($console, ['XF\\Cli\\Command\\Development\\', 'XF\\Cli\\Command\\Make\\']);
+		$expected = $this->familyNames($console, [
+			'XF\\Cli\\Command\\Development\\',
+			'XF\\Cli\\Command\\Make\\',
+			'XF\\Cli\\Command\\Development\\RequiresDevModeTrait',
+		]);
 
 		$this->assertGreaterThan(100, count($expected), 'the families should be found before this means anything');
 		$this->assertSame($expected, $hidden);
@@ -72,7 +76,10 @@ class HidingTest extends TestCase
 		$console = $this->forumConsole();
 		$hidden = $this->hiddenByApply($console);
 
-		$this->assertSame($this->familyNames($console, ['XF\\Cli\\Command\\Designer\\']), $hidden);
+		$this->assertSame($this->familyNames($console, [
+			'XF\\Cli\\Command\\Designer\\',
+			'XF\\Cli\\Command\\Designer\\RequiresDesignerModeTrait',
+		]), $hidden);
 	}
 
 	public function test_no_other_command_is_hidden_with_both_modes_off(): void
@@ -81,7 +88,7 @@ class HidingTest extends TestCase
 		$console = $this->forumConsole();
 		$hidden = $this->hiddenByApply($console);
 
-		$this->assertSame($this->familyNames($console, array_keys(CommandHider::FAMILIES)), $hidden);
+		$this->assertSame($this->familyNames($console, array_keys(CommandHider::families($console))), $hidden);
 		$this->assertFalse($console->find('xf:addon-list')->isHidden());
 		$this->assertFalse($console->find('hide-dev-commands:validate')->isHidden());
 	}

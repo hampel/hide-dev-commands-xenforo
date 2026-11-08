@@ -7,7 +7,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Hides XenForo's development, make and designer commands from cmd.php when the mode each one
- * needs is off, and makes each refuse to run by its exact name.
+ * needs is off, and makes each refuse to run by its exact name - and any add-on's command that
+ * guards itself with the same traits.
  *
  * No XenForo hook offers the console application: cmd.php builds the runner with a plain
  * `new Runner()`, commands are registered before the app starts and so before any listener is
@@ -30,6 +31,17 @@ class CommandHider
 		'XF\\Cli\\Command\\Development\\' => ['mode' => 'development', 'label' => 'xf-dev:*'],
 		'XF\\Cli\\Command\\Make\\' => ['mode' => 'development', 'label' => 'xf-make:*'],
 		'XF\\Cli\\Command\\Designer\\' => ['mode' => 'designer', 'label' => 'xf-designer:*'],
+	];
+
+	/**
+	 * Guard trait => the mode it checks, and the label to show for the commands that use it. A
+	 * command outside the families that uses one of these refuses to run without that mode, so it
+	 * is a development command too, whichever add-on it belongs to. Both traits are in every
+	 * XenForo from 2.2.0.
+	 */
+	public const GUARDS = [
+		'XF\\Cli\\Command\\Development\\RequiresDevModeTrait' => ['mode' => 'development', 'label' => 'add-on, development'],
+		'XF\\Cli\\Command\\Designer\\RequiresDesignerModeTrait' => ['mode' => 'designer', 'label' => 'add-on, designer'],
 	];
 
 	/** @var Application|null */
@@ -103,6 +115,48 @@ class CommandHider
 		return $code->getValue($command) !== null;
 	}
 
+	/**
+	 * The mode and label for a key of families(): a class prefix from FAMILIES or a trait from
+	 * GUARDS.
+	 *
+	 * @return array{mode: string, label: string}
+	 */
+	public static function group(string $key): array
+	{
+		return self::FAMILIES[$key] ?? self::GUARDS[$key];
+	}
+
+	/**
+	 * The guard trait a command uses, if any - on its own class, a parent class, or a trait it
+	 * uses. class_uses() reports only the traits a class declares itself, so it has to be walked.
+	 */
+	public static function guardOf(Command $command): ?string
+	{
+		$classes = array_merge([get_class($command)], array_values(class_parents($command) ?: []));
+		$seen = [];
+
+		while ($classes)
+		{
+			$class = array_shift($classes);
+			if (isset($seen[$class]))
+			{
+				continue;
+			}
+			$seen[$class] = true;
+
+			foreach (class_uses($class) ?: [] AS $trait)
+			{
+				if (isset(self::GUARDS[$trait]))
+				{
+					return $trait;
+				}
+				$classes[] = $trait;
+			}
+		}
+
+		return null;
+	}
+
 	public static function modeEnabled(string $mode): bool
 	{
 		$config = \XF::config($mode);
@@ -112,13 +166,14 @@ class CommandHider
 
 	/**
 	 * Every registered command in each family, once each - Application::all() lists an alias as a
-	 * second entry for the same object.
+	 * second entry for the same object. Core's families come first, by class prefix; then any
+	 * other command that uses a guard trait, by the trait.
 	 *
-	 * @return array<string, array<string, Command>> class prefix => command name => command
+	 * @return array<string, array<string, Command>> class prefix or guard trait => command name => command
 	 */
 	public static function families(Application $console): array
 	{
-		$families = array_fill_keys(array_keys(self::FAMILIES), []);
+		$families = array_fill_keys(array_merge(array_keys(self::FAMILIES), array_keys(self::GUARDS)), []);
 		$seen = [];
 
 		foreach ($console->all() AS $command)
@@ -136,8 +191,14 @@ class CommandHider
 				if (strpos($class, $prefix) === 0)
 				{
 					$families[$prefix][$command->getName()] = $command;
-					break;
+					continue 2;
 				}
+			}
+
+			$guard = self::guardOf($command);
+			if ($guard !== null)
+			{
+				$families[$guard][$command->getName()] = $command;
 			}
 		}
 
@@ -173,9 +234,9 @@ class CommandHider
 		$running = self::resolve($console, $requested);
 		$hidden = 0;
 
-		foreach (self::families($console) AS $prefix => $commands)
+		foreach (self::families($console) AS $key => $commands)
 		{
-			$mode = self::FAMILIES[$prefix]['mode'];
+			$mode = self::group($key)['mode'];
 			if (self::modeEnabled($mode))
 			{
 				continue;

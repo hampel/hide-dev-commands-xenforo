@@ -29,7 +29,8 @@ does not fire, so nothing is hidden. Nothing is persisted. A break anywhere puts
 
 **`hide-dev-commands:validate` is the guard on that chain**, and the reason the add-on has the
 command at all: it proves capture, the listener, that each family is still found under its
-namespace, and that `xf-dev:info` refuses by name. Run it on every new XenForo version.
+namespace, that the commands using a guard trait are hidden, and that `xf-dev:info` refuses by
+name. Run it on every new XenForo version.
 
 ### Decisions, made on 2026-11-08
 
@@ -38,10 +39,16 @@ namespace, and that `xf-dev:info` refuses by name. Run it on every new XenForo v
   practice the block answers for `xf-dev:info` and `xf-dev:metadata-fix`. The refusal uses the guard
   traits' own words, so every hidden command refuses alike, and an unguarded command a later XenForo
   adds is covered without a change here.
-- **The three core namespaces only, matched by class prefix**: `XF\Cli\Command\Development\`,
-  `\Make\` and `\Designer\`. Not `xf-addon:*`, whose `*-step` commands are operator tools, and not
-  third-party add-ons' commands. A command name is free text; the class namespace is where core
-  keeps them.
+- **Core's three namespaces, matched by class prefix**: `XF\Cli\Command\Development\`,
+  `\Make\` and `\Designer\`. Not `xf-addon:*`, whose `*-step` commands are operator tools. A
+  command name is free text; the class namespace is where core keeps them.
+- **And any other command that uses a guard trait, from 1.0.0a2.** A command outside those
+  namespaces that uses `RequiresDevModeTrait` or `RequiresDesignerModeTrait` refuses to run
+  without that mode, so it is a development command whichever add-on it belongs to, and it is
+  hidden and blocked by the mode its trait checks. `CommandHider::guardOf()` walks parent classes
+  and traits, because `class_uses()` reports only what a class declares itself. No core command
+  outside the three namespaces uses either trait, and both traits are in 2.2.0 Patch 2. A command
+  that checks the mode by hand is not detected; the `config.php` list is for that.
 - **Designer commands follow designer mode, not development mode**, because that is what
   `RequiresDesignerModeTrait` checks. Otherwise a forum with designer mode on and development off
   would have working commands hidden.

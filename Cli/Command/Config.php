@@ -59,17 +59,26 @@ class Config extends Command
 		}
 
 		$listed = [];
-		foreach (CommandHider::families($console) AS $prefix => $commands)
+		foreach (CommandHider::families($console) AS $key => $commands)
 		{
-			$family = CommandHider::FAMILIES[$prefix];
+			$family = CommandHider::group($key);
 			$hidden = array_filter($commands, function (Command $command)
 			{
 				return $command->isHidden();
 			});
 
-			$summary = !$commands && !is_dir(CommandHider::familyDirectory($prefix))
-				? $this->muted('not in XenForo ' . CommandHider::xenForoVersion())
-				: $this->summary(count($commands), count($hidden), $family['mode']);
+			if (!$commands && isset(CommandHider::GUARDS[$key]))
+			{
+				$summary = $this->muted('none installed');
+			}
+			else if (!$commands && !is_dir(CommandHider::familyDirectory($key)))
+			{
+				$summary = $this->muted('not in XenForo ' . CommandHider::xenForoVersion());
+			}
+			else
+			{
+				$summary = $this->summary(count($commands), count($hidden), $family['mode']);
+			}
 			$this->detail($family['label'], $summary);
 			$listed = array_merge($listed, array_keys($hidden));
 		}

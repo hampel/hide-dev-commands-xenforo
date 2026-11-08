@@ -130,13 +130,17 @@ class Validate extends Command
 	 */
 	private function family(string $prefix, array $commands): void
 	{
-		$label = CommandHider::FAMILIES[$prefix]['label'];
-		$mode = CommandHider::FAMILIES[$prefix]['mode'];
+		$label = CommandHider::group($prefix)['label'];
+		$mode = CommandHider::group($prefix)['mode'];
 		$total = count($commands);
 
 		if ($total === 0)
 		{
-			if (is_dir(CommandHider::familyDirectory($prefix)))
+			if (isset(CommandHider::GUARDS[$prefix]))
+			{
+				$this->checkSkip($label, 'no add-on command uses ' . basename(str_replace('\\', '/', $prefix)));
+			}
+			else if (is_dir(CommandHider::familyDirectory($prefix)))
 			{
 				$this->checkWarn($label, "nothing registered under {$prefix} - has XenForo moved these commands?");
 			}
@@ -185,7 +189,7 @@ class Validate extends Command
 
 		foreach ($families AS $prefix => $commands)
 		{
-			if (CommandHider::modeEnabled(CommandHider::FAMILIES[$prefix]['mode']))
+			if (CommandHider::modeEnabled(CommandHider::group($prefix)['mode']))
 			{
 				continue;
 			}

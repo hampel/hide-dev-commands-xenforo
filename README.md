@@ -19,9 +19,15 @@ XenForo 2.2.0 or later, and PHP 7.4 or later.
 | `xf-dev:*` | `$config['development']['enabled']` is false | 80 |
 | `xf-make:*` | `$config['development']['enabled']` is false | 35 |
 | `xf-designer:*` | `$config['designer']['enabled']` is false | 14 |
+| another add-on's command that uses `RequiresDevModeTrait` | `$config['development']['enabled']` is false | |
+| another add-on's command that uses `RequiresDesignerModeTrait` | `$config['designer']['enabled']` is false | |
+
+**An add-on's command is hidden when it guards itself the way core's do.** XenForo's two guard
+traits make a command refuse to run without its mode, so a command that uses one is a development
+command whichever add-on it comes from.
 
 Turn the mode on and the commands come back; nothing is stored. Every other command is left alone,
-including `xf-addon:*` and those of other add-ons.
+including `xf-addon:*`.
 
 **This tidies the list; it does not close a hole.** All but two of these commands already refuse to
 run without their mode. The two that do not are `xf-dev:info`, which prints the database name, user
